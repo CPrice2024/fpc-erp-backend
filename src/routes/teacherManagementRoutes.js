@@ -12,11 +12,33 @@ import {
   getTeachers,
   deleteTeacher,
 } from "../controllers/teacherManagementController.js";
+import {
+  getMyClasses,
+  getAttendanceStudents,
+  saveAttendance,
+}
+from "../controllers/teacherController.js";
 
 const router =
   express.Router();
 
 router.use(protect);
+
+
+router.get(
+  "/my-classes",
+  getMyClasses
+);
+
+router.get(
+  "/attendance-students",
+  getAttendanceStudents
+);
+
+router.post(
+  "/attendance",
+  saveAttendance
+);
 
 router.get(
   "/",

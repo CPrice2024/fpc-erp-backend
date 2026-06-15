@@ -1,34 +1,46 @@
 import express from "express";
 
+import { getCollegeHeadDashboard } from "../controllers/collegeHeadController.js";
+
+import {
+  getDepartments,
+  createDepartment,
+  updateDepartment,
+  deleteDepartment,
+} from "../controllers/departmentController.js";
+
+import { protect } from "../middleware/authMiddleware.js";
+
 const router = express.Router();
 
-// Dashboard
-router.get("/dashboard", async (req, res) => {
-  res.json({
-    stats: {
-      departments: 5,
-      departmentHeads: 5,
-      students: 1000,
-      faculty: 50,
-    },
-  });
-});
+router.get(
+  "/dashboard",
+  protect,
+  getCollegeHeadDashboard
+);
 
-// Departments
-router.get("/departments", async (req, res) => {
-  // fetch departments
-});
+router.get(
+  "/departments",
+  protect,
+  getDepartments
+);
 
-router.post("/departments", async (req, res) => {
-  // create department
-});
+router.post(
+  "/departments",
+  protect,
+  createDepartment
+);
 
-router.put("/departments/:id", async (req, res) => {
-  // update department
-});
+router.put(
+  "/departments/:id",
+  protect,
+  updateDepartment
+);
 
-router.delete("/departments/:id", async (req, res) => {
-  // delete department
-});
+router.delete(
+  "/departments/:id",
+  protect,
+  deleteDepartment
+);
 
 export default router;

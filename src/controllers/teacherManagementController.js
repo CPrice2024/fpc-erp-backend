@@ -7,9 +7,13 @@ export const createTeacher = async (
 ) => {
   try {
     const {
-      name,
-      email,
-    } = req.body;
+  name,
+  email,
+  gender,
+  course,
+  specialization,
+  experience,
+} = req.body;
 
     const exists =
       await User.findOne({ email });
@@ -41,16 +45,19 @@ export const createTeacher = async (
       );
 
     const teacher =
-      await User.create({
-        name,
-        email,
-        password:
-          hashedPassword,
-        role: "teacher",
+  await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    role: "teacher",
 
-        department:
-          req.user.department,
-      });
+    gender,
+    course,
+    specialization,
+    experience,
+
+    department: req.user.department,
+  });
 
     res.status(201).json({
       message:

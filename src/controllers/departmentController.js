@@ -1,5 +1,7 @@
 import Department from "../models/Department.js";
 import User from "../models/User.js";
+import Student from "../models/Student.js";
+import Course from "../models/Course.js";
 import bcrypt from "bcryptjs";
 
 export const createDepartment = async (req, res) => {
@@ -68,57 +70,213 @@ export const createDepartment = async (req, res) => {
   }
 };
 export const getDepartments = async (req, res) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({
-        message: "Unauthorized",
+try {
+if (!req.user) {
+  return res.status(401).json({
+    message: "Unauthorized",
+  });
+}
+
+const user = req.user;
+let departments = [];
+
+// =========================
+// COLLEGE HEAD
+// =========================
+
+if (user.role === "college_head") {
+
+  const rawDepartments =
+    await Department.find()
+      .populate(
+        "departmentHead",
+        "name email"
+      )
+      .sort({
+        createdAt: -1,
       });
-    }
 
-    const user = req.user;
-    let departments;
+  departments =
+    await Promise.all(
+      rawDepartments.map(
+        async (dept) => {
 
-    if (user.role === "college_head") {
-      departments = await Department.find()
-        .populate("departmentHead", "name email")
-        .sort({ createdAt: -1 });
-    }
+          const students =
+            await Student.countDocuments({
+              department: dept._id,
+            });
 
-    else if (user.role === "department_head") {
-      departments = await Department.find({
-        _id: user.department,
-      }).populate("departmentHead", "name email");
-    }
+            console.log(
+  "Department:",
+  dept.name,
+  "ID:",
+  dept._id
+);
 
-    else {
-      return res.status(403).json({
-        message: "Access denied",
-      });
-    }
+const teacherUsers =
+  await User.find({
+    role: "teacher",
+  });
 
-    res.json(departments);
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
+console.log(
+  "Teachers:",
+  teacherUsers
+);
+
+          const teachers =
+            await User.countDocuments({
+              role: "teacher",
+              department: dept._id,
+            });
+
+          const courses =
+            await Course.countDocuments({
+              department: dept._id,
+            });
+
+          return {
+            ...dept.toObject(),
+            students,
+            teachers,
+            courses,
+          };
+        }
+      )
+    );
+}
+
+// =========================
+// DEPARTMENT HEAD
+// =========================
+
+else if (
+  user.role === "department_head"
+) {
+
+  const rawDepartments =
+    await Department.find({
+      _id: user.department,
+    }).populate(
+      "departmentHead",
+      "name email"
+    );
+
+  departments =
+    await Promise.all(
+      rawDepartments.map(
+        async (dept) => {
+
+          const students =
+            await Student.countDocuments({
+              department: dept._id,
+            });
+
+          const teachers =
+            await User.countDocuments({
+              role: "teacher",
+              department: dept._id,
+            });
+
+          const courses =
+            await Course.countDocuments({
+              department: dept._id,
+            });
+
+          return {
+            ...dept.toObject(),
+            students,
+            teachers,
+            courses,
+          };
+        }
+      )
+    );
+}
+
+else {
+  return res.status(403).json({
+    message: "Access denied",
+  });
+}
+
+res.json(departments);
+
+} catch (error) {
+res.status(500).json({
+message: error.message,
+});
+}
 };
+
 
 export const updateDepartment = async (req, res) => {
   try {
-    const department = await Department.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    ).populate("departmentHead", "name email");
+    const {
+      name,
+      description,
+      email,
+      phone,
+      established,
+      headName,
+    } = req.body;
 
-    res.json(department);
+    const department =
+      await Department.findById(req.params.id);
+
+    if (!department) {
+      return res.status(404).json({
+        message: "Department not found",
+      });
+    }
+
+    // =========================
+    // Update Department
+    // =========================
+
+    department.name = name;
+    department.description = description;
+    department.email = email;
+    department.phone = phone;
+    department.established = established;
+
+    await department.save();
+
+    // =========================
+    // Update Department Head User
+    // =========================
+
+    if (department.departmentHead) {
+      await User.findByIdAndUpdate(
+        department.departmentHead,
+        {
+          name: headName,
+          email: email,
+        }
+      );
+    }
+
+    const updatedDepartment =
+      await Department.findById(
+        department._id
+      ).populate(
+        "departmentHead",
+        "name email"
+      );
+
+    res.json({
+      message:
+        "Department updated successfully",
+      department: updatedDepartment,
+    });
+
   } catch (error) {
     res.status(500).json({
       message: error.message,
     });
   }
 };
+
+
 export const deleteDepartment = async (req, res) => {
   try {
     const department = await Department.findById(req.params.id);

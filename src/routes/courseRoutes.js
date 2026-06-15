@@ -1,34 +1,266 @@
 import express from "express";
-import { db } from "../config/db.js";
+import Course from "../models/Course.js";
+
+import { protect }
+from "../middleware/authMiddleware.js";
+
+import {
+  departmentHeadOnly,
+} from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 
-// GET courses with teacher name
-router.get("/", (req, res) => {
-  const sql = `
-    SELECT c.*, t.name AS teacher_name
-    FROM courses c
-    LEFT JOIN teachers t ON c.teacher_id = t.id
-  `;
+/* ==========================
+   GET ALL COURSES
+========================== */
+router.get(
+  "/",
+  protect,
+  async (req, res) => {
+    try {
 
-  db.query(sql, (err, result) => {
-    if (err) return res.status(500).json(err);
-    res.json(result);
-  });
-});
+      const query = {};
 
-// CREATE course
-router.post("/", (req, res) => {
-  const { id, name, code, credit, teacherId } = req.body;
+      if (
+        req.user.role ===
+        "department_head"
+      ) {
+        query.department =
+          req.user.department;
+      }
 
-  db.query(
-    "INSERT INTO courses VALUES (?,?,?,?,?)",
-    [id, name, code, credit, teacherId],
-    (err) => {
-      if (err) return res.status(500).json(err);
-      res.json({ message: "Course created" });
+      const courses =
+        await Course.find(query)
+          .populate(
+            "department",
+            "name"
+          )
+          .populate(
+            "teacher",
+            "name email"
+          );
+
+      res.json(courses);
+
+    } catch (error) {
+      res.status(500).json({
+        message:
+          error.message,
+      });
     }
-  );
-});
+  }
+);
+
+/* ==========================
+   CREATE COURSE
+========================== */
+router.post(
+  "/",
+  protect,
+  departmentHeadOnly,
+  async (req, res) => {
+    try {
+
+      const {
+        courseCode,
+        courseName,
+        level,
+        creditHour,
+        status,
+      } = req.body;
+
+      const exists =
+        await Course.findOne({
+          courseCode,
+        });
+
+      if (exists) {
+        return res.status(400).json({
+          message:
+            "Course code already exists",
+        });
+      }
+
+      const course =
+        await Course.create({
+          courseCode,
+          courseName,
+          level,
+          creditHour,
+          status,
+
+          department:
+            req.user.department,
+        });
+
+      res.status(201).json({
+        message:
+          "Course created successfully",
+
+        course,
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        message:
+          error.message,
+      });
+    }
+  }
+);
+
+/* ==========================
+   ASSIGN TEACHER
+========================== */
+router.put(
+  "/assign-teacher/:id",
+  protect,
+  departmentHeadOnly,
+  async (req, res) => {
+    try {
+
+      const { teacherId } =
+        req.body;
+
+      const course =
+        await Course.findByIdAndUpdate(
+          req.params.id,
+          {
+            teacher:
+              teacherId,
+          },
+          {
+            new: true,
+          }
+        )
+          .populate(
+            "teacher",
+            "name"
+          );
+
+      res.json({
+        message:
+          "Teacher assigned successfully",
+
+        course,
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        message:
+          error.message,
+      });
+    }
+  }
+);
+
+router.get(
+  "/:id",
+  protect,
+  async (req, res) => {
+    try {
+
+      const course =
+        await Course.findById(
+          req.params.id
+        )
+          .populate(
+            "department",
+            "name"
+          )
+          .populate(
+            "teacher",
+            "name email"
+          );
+
+      if (!course) {
+        return res.status(404).json({
+          message: "Course not found",
+        });
+      }
+
+      res.json(course);
+
+    } catch (error) {
+      res.status(500).json({
+        message: error.message,
+      });
+    }
+  }
+);
+
+router.put(
+  "/:id",
+  protect,
+  departmentHeadOnly,
+  async (req, res) => {
+    try {
+
+      const {
+        courseName,
+        level,
+        creditHour,
+        status,
+      } = req.body;
+
+      const course =
+        await Course.findByIdAndUpdate(
+          req.params.id,
+          {
+            courseName,
+            level,
+            creditHour,
+            status,
+          },
+          {
+            new: true,
+          }
+        )
+          .populate(
+            "department",
+            "name"
+          )
+          .populate(
+            "teacher",
+            "name email"
+          );
+
+      res.json(course);
+
+    } catch (error) {
+      res.status(500).json({
+        message: error.message,
+      });
+    }
+  }
+);
+
+/* ==========================
+   DELETE COURSE
+========================== */
+router.delete(
+  "/:id",
+  protect,
+  departmentHeadOnly,
+  async (req, res) => {
+    try {
+
+      await Course.findByIdAndDelete(
+        req.params.id
+      );
+
+      res.json({
+        message:
+          "Course deleted successfully",
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        message:
+          error.message,
+      });
+    }
+  }
+);
 
 export default router;

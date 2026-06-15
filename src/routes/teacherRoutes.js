@@ -1,6 +1,7 @@
 import express from "express";
 import Teacher from "../models/Teacher.js";
 
+
 const router = express.Router();
 
 
