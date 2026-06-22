@@ -9,6 +9,7 @@ export const createRegistrar = async (
     const {
       name,
       email,
+      phone,
     } = req.body;
 
     const exists =
@@ -34,6 +35,7 @@ export const createRegistrar = async (
       await User.create({
         name,
         email,
+        phone,
         password:
           hashedPassword,
         role: "registrar",
@@ -76,9 +78,10 @@ export const getRegistrars =
   async (req, res) => {
     try {
       const registrar =
-        await User.findById(
-          req.params.id
-        );
+  await User.findOne({
+    _id: req.params.id,
+    role: "registrar",
+  });
 
       if (!registrar) {
         return res.status(404).json({
@@ -101,3 +104,83 @@ export const getRegistrars =
       });
     }
   };
+
+  export const updateRegistrar =
+async (req, res) => {
+  try {
+
+    const {
+      name,
+      email,
+      phone,
+      status,
+    } = req.body;
+
+    const registrar =
+  await User.findOne({
+    _id: req.params.id,
+    role: "registrar",
+  });
+
+    if (!registrar) {
+      return res.status(404).json({
+        message:
+          "Registrar not found",
+      });
+    }
+
+    registrar.name = name;
+    registrar.email = email;
+    registrar.phone = phone;
+    registrar.status = status;
+
+    await registrar.save();
+
+    res.json({
+      message:
+        "Registrar updated successfully",
+      registrar,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+export const toggleRegistrarStatus =
+async (req, res) => {
+  try {
+
+    const registrar =
+  await User.findOne({
+    _id: req.params.id,
+    role: "registrar",
+  });
+
+    if (!registrar) {
+      return res.status(404).json({
+        message:
+          "Registrar not found",
+      });
+    }
+
+    registrar.status =
+      registrar.status === "active"
+        ? "inactive"
+        : "active";
+
+    await registrar.save();
+
+    res.json({
+      message:
+        "Status updated successfully",
+      registrar,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};

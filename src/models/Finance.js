@@ -5,8 +5,7 @@ const financeSchema =
     {
       student: {
         type:
-          mongoose.Schema.Types
-            .ObjectId,
+          mongoose.Schema.Types.ObjectId,
         ref: "Student",
         required: true,
       },
@@ -35,15 +34,68 @@ const financeSchema =
         default: 0,
       },
 
-      transactionId:
-        String,
+      // NEW
+      semester: {
+        type: String,
+      },
+
+      academicYear: {
+        type: String,
+      },
+
+      receiptNumber: {
+        type: String,
+        unique: true,
+      },
+
+      transactionId: String,
 
       slip: String,
 
+      paidBy: {
+        type: String,
+      },
+
+      paidDate: {
+        type: Date,
+        default: Date.now,
+      },
+
+      remarks: {
+        type: String,
+      },
+
       status: {
         type: String,
+        enum: [
+          "Pending",
+          "Completed",
+          "Rejected",
+        ],
         default: "Completed",
       },
+      semester: String,
+academicYear: String,
+
+receiptNumber: {
+  type: String,
+  unique: true,
+},
+
+paidBy: String,
+
+paidDate: {
+  type: Date,
+  default: Date.now,
+},
+
+remarks: String,
+
+createdBy: {
+  type:
+    mongoose.Schema.Types.ObjectId,
+  ref: "User",
+},
     },
     {
       timestamps: true,
