@@ -1,80 +1,76 @@
 import User from "../models/User.js";
+import Course from "../models/Course.js";
 import bcrypt from "bcryptjs";
 
-export const createTeacher = async (
-  req,
-  res
-) => {
+export const createTeacher = async (req, res) => {
   try {
     const {
-  name,
-  email,
-  gender,
-  course,
-  specialization,
-  experience,
-} = req.body;
+      name,
+      email,
+      gender,
+      specialization,
+      experience,
+      courseIds,
+    } = req.body;
 
-    const exists =
-      await User.findOne({ email });
+    const exists = await User.findOne({ email });
 
     if (exists) {
       return res.status(400).json({
-        message:
-          "Teacher already exists",
+        message: "Teacher already exists",
       });
     }
 
-    const count =
-      await User.countDocuments({
-        role: "teacher",
-      });
+    const count = await User.countDocuments({
+      role: "teacher",
+    });
 
-    const teacherCode =
-      `TEA${String(
-        count + 1
-      ).padStart(3, "0")}`;
+    const teacherCode = `TEA${String(count + 1).padStart(3, "0")}`;
 
-    const plainPassword =
-      `${teacherCode}@123`;
+    const plainPassword = `${teacherCode}@123`;
 
-    const hashedPassword =
-      await bcrypt.hash(
-        plainPassword,
-        10
+    const hashedPassword = await bcrypt.hash(
+      plainPassword,
+      10
+    );
+
+    const teacher = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: "teacher",
+      gender,
+      specialization,
+      experience,
+      department: req.user.department,
+      courses: courseIds || [],
+    });
+
+    // Assign teacher to selected courses
+    if (courseIds && courseIds.length > 0) {
+      await Course.updateMany(
+        {
+          _id: { $in: courseIds },
+          department: req.user.department,
+        },
+        {
+          teacher: teacher._id,
+        }
       );
-
-    const teacher =
-  await User.create({
-    name,
-    email,
-    password: hashedPassword,
-    role: "teacher",
-
-    gender,
-    course,
-    specialization,
-    experience,
-
-    department: req.user.department,
-  });
+    }
 
     res.status(201).json({
-      message:
-        "Teacher created successfully",
-
+      message: "Teacher created successfully",
       teacher,
-
       loginCredentials: {
         email,
-        password:
-          plainPassword,
+        password: plainPassword,
       },
     });
+
   } catch (error) {
     res.status(500).json({
-      message:
-        error.message,
+      message: error.message,
     });
   }
 };

@@ -36,48 +36,123 @@ const studentSchema = new mongoose.Schema(
     },
 
 
-    phone: String,
-
-    email: String,
 
     photo: {
   type: String,
   default: "",
 },
+region: String,
+city: String,
+Woreda: String,
+SpecificPlace: String,
+address: String,
 
-    region: String,
+phone: String,
+email: String,
 
-    city: String,
 
-    address: String,
+  // =========================
+// Education Information
+// =========================
 
-    // Education
-    department: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Department",
-      required: true,
-    },
+institutionName: String,
 
-    level: {
-      type: String,
-      required: true,
-    },
+academicYear: String,
 
-    batch: String,
+educationType: String,
 
-    academicYear: String,
+highestQualification: String,
 
-    admissionYear: {
-      type: Number,
-      default: new Date().getFullYear(),
-    },
+previousInstitution: String,
 
-    // Guardian
+previousEducation: String,
+
+department: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Department",
+  required: true,
+},
+courses: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Course",
+  },
+],
+
+program: String,
+
+major: String,
+
+level: {
+  type: String,
+  required: true,
+},
+
+semester: String,
+
+batch: String,
+
+studyMode: String,
+
+enrollmentStatus: String,
+
+educationSponsor: String,
+
+educationLanguage: String,
+
+registrationDate: Date,
+
+educationStartDate: Date,
+
+educationEndDate: Date,
+
+durationMonths: Number,
+
+admissionYear: {
+  type: Number,
+  default: new Date().getFullYear(),
+},
+
+
+    // Guardian Information
     guardianName: String,
 
     guardianPhone: String,
 
     relationship: String,
+
+    // =========================
+// Inmate Information
+// =========================
+
+isInmate: {
+  type: Boolean,
+  default: false,
+},
+
+prisonId: String,
+
+crimeType: String,
+
+sentenceDuration: Number,
+
+securityLevel: String,
+
+prisonFacility: String,
+
+cellNumber: String,
+
+imprisonmentStartDate: Date,
+
+expectedReleaseDate: Date,
+
+paroleDate: Date,
+
+currentStatus: String,
+
+assignedOfficer: String,
+
+officerPhone: String,
 
     // Status
     status: {

@@ -6,6 +6,7 @@ import {
   getStudent,
   updateStudent,
   deleteStudent,
+  getStudentCourses,
 } from "../controllers/studentController.js";
 
 import {
@@ -24,6 +25,11 @@ router.get(
   "/",
   protect,
   getStudents
+);
+router.get(
+  "/:id/courses",
+  protect,
+  getStudentCourses
 );
 
 router.get(

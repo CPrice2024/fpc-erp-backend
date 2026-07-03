@@ -12,6 +12,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    photo: {
+  type: String,
+  default: "",
+},
 
     email: {
       type: String,
@@ -52,11 +56,12 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
-    course: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Course",
-      default: null,
-    },
+    courses: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Course",
+  },
+],
 
     specialization: {
       type: String,

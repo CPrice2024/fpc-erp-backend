@@ -9,25 +9,67 @@ export const createStudent = async (
     console.log("BODY:", req.body);
 console.log("FILE:", req.file);
 console.log("USER:", req.user);
-   const {
+
+const {
+  // Personal
   firstName,
   fatherName,
   grandfatherName,
   gender,
   dob,
   nationality,
+
+  // Contact
   phone,
   email,
   region,
   city,
+  Woreda,
+  SpecificPlace,
   address,
-  department,
-  level,
-  batch,
+
+  // Education
+  institutionName,
   academicYear,
+  educationType,
+  highestQualification,
+  previousInstitution,
+  previousEducation,
+  department,
+  program,
+  major,
+  level,
+ semester,
+  batch,
+  studyMode,
+  enrollmentStatus,
+  educationSponsor,
+  educationLanguage,
+  registrationDate,
+  educationStartDate,
+  educationEndDate,
+  durationMonths,
+
+  // Guardian
   guardianName,
   guardianPhone,
   relationship,
+
+  // Inmate
+  isInmate,
+  prisonId,
+  crimeType,
+  sentenceDuration,
+  securityLevel,
+  prisonFacility,
+  cellNumber,
+  imprisonmentStartDate,
+  expectedReleaseDate,
+  paroleDate,
+  currentStatus,
+  assignedOfficer,
+  officerPhone,
+
 } = req.body;
 
     const lastStudent =
@@ -57,30 +99,103 @@ if (lastStudent?.studentId) {
     ? `/uploads/students/${req.file.filename}`
     : "";
 
-   const student =
-  await Student.create({
-    studentId,
-    firstName,
-    fatherName,
-    grandfatherName,
-    gender,
-    dob,
-    nationality,
-    phone,
-    email,
-    region,
-    city,
-    address,
-    department,
-    level,
-    batch,
-    academicYear,
-    guardianName,
-    guardianPhone,
-    relationship,
-    photo,
-    createdBy: req.user.id,
-  });
+    const inmateStatus =
+  isInmate === "true" ||
+  isInmate === true;
+
+    const student = await Student.create({
+  studentId,
+
+  // Personal
+  firstName,
+  fatherName,
+  grandfatherName,
+  gender,
+  dob: dob || null,
+  nationality,
+
+  // Photo
+  photo,
+
+  // Contact
+  phone,
+  email,
+  region,
+  city,
+  Woreda,
+  SpecificPlace,
+  address,
+
+  // Education
+  institutionName,
+  academicYear,
+  educationType,
+  highestQualification,
+  previousInstitution,
+  previousEducation,
+  department,
+  program,
+  major,
+  level,
+  semester,
+  batch,
+  studyMode,
+  enrollmentStatus,
+  educationSponsor,
+  educationLanguage,
+  registrationDate:
+  registrationDate || null,
+  educationStartDate:
+  educationStartDate || null,
+  educationEndDate:
+  educationEndDate || null,
+  durationMonths:
+  durationMonths
+    ? Number(durationMonths)
+    : null,
+
+  // Guardian
+  guardianName,
+  guardianPhone,
+  relationship,
+
+  // Inmate
+  isInmate: inmateStatus,
+  prisonId: inmateStatus ? prisonId : "",
+  crimeType: inmateStatus ? crimeType : "",
+  sentenceDuration: inmateStatus && sentenceDuration
+  ? Number(sentenceDuration)
+  : null,
+  securityLevel: inmateStatus
+  ? securityLevel
+  : "",
+  prisonFacility: inmateStatus
+  ? prisonFacility
+  : "",
+  cellNumber: inmateStatus
+  ? cellNumber
+  : "",
+  imprisonmentStartDate: inmateStatus
+  ? imprisonmentStartDate || null
+  : null,
+  expectedReleaseDate: inmateStatus
+  ? expectedReleaseDate || null
+  : null,
+  paroleDate: inmateStatus
+  ? paroleDate || null
+  : null,
+  currentStatus: inmateStatus
+  ? currentStatus
+  : "",
+  assignedOfficer: inmateStatus
+  ? assignedOfficer
+  : "",
+  officerPhone: inmateStatus
+  ? officerPhone
+  : "",
+
+  createdBy: req.user.id,
+});
 
     res.status(201).json(student);
 
@@ -161,6 +276,48 @@ export const updateStudent =
         ...req.body,
       };
 
+      updateData.isInmate =
+        req.body.isInmate === "true" ||
+        req.body.isInmate === true;
+
+      if (!updateData.isInmate) {
+  updateData.prisonId = "";
+  updateData.crimeType = "";
+  updateData.sentenceDuration = null;
+  updateData.securityLevel = "";
+  updateData.prisonFacility = "";
+  updateData.cellNumber = "";
+  updateData.imprisonmentStartDate = null;
+  updateData.expectedReleaseDate = null;
+  updateData.paroleDate = null;
+  updateData.currentStatus = "";
+  updateData.assignedOfficer = "";
+  updateData.officerPhone = "";
+}  
+      
+        updateData.durationMonths =
+  updateData.durationMonths
+    ? Number(updateData.durationMonths)
+    : null;
+
+updateData.sentenceDuration =
+  updateData.sentenceDuration
+    ? Number(updateData.sentenceDuration)
+    : null;
+
+[
+  "dob",
+  "registrationDate",
+  "educationStartDate",
+  "educationEndDate",
+  "imprisonmentStartDate",
+  "expectedReleaseDate",
+  "paroleDate",
+].forEach((field) => {
+  updateData[field] =
+    updateData[field] || null;
+});
+
       if (req.file) {
         updateData.photo =
           `/uploads/students/${req.file.filename}`;
@@ -215,17 +372,15 @@ export const deleteStudent =
   async (req, res) => {
     try {
 
-      const grades =
-        await Grade.find({
-          student: req.params.id,
-        })
-          .populate(
-            "course"
-          )
-          .populate(
-            "teacher",
-            "name"
-          );
+     const grades = await Grade.find({
+  student: req.params.id,
+})
+.populate("course")
+.populate("teacher", "name");
+
+console.log("========== GRADES ==========");
+console.log(JSON.stringify(grades, null, 2));
+console.log("============================");
 
       const courses =
   grades.map((g) => ({

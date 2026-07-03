@@ -35,6 +35,10 @@ const courseSchema = new mongoose.Schema(
       type: Number,
       default: 3,
     },
+    section: {
+    type: String,
+    required: true,
+},
     status: {
   type: String,
   enum: ["active", "inactive"],
