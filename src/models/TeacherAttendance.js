@@ -1,13 +1,7 @@
 import mongoose from "mongoose";
 
-const attendanceSchema = new mongoose.Schema(
+const teacherAttendanceSchema = new mongoose.Schema(
   {
-    student: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Student",
-      required: true,
-    },
-
     teacher: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -20,9 +14,9 @@ const attendanceSchema = new mongoose.Schema(
       required: true,
     },
 
-    course: {
+    markedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Course",
+      ref: "User",
       required: true,
     },
 
@@ -34,17 +28,11 @@ const attendanceSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
-        "Present",
-        "Absent",
-        "Late",
-        "Excused",
+        "present",
+        "absent",
+        "late",
       ],
-      default: "Present",
-    },
-
-    remark: {
-      type: String,
-      default: "",
+      default: "present",
     },
   },
   {
@@ -52,11 +40,9 @@ const attendanceSchema = new mongoose.Schema(
   }
 );
 
-// One attendance record per student, course and day
-attendanceSchema.index(
+teacherAttendanceSchema.index(
   {
-    student: 1,
-    course: 1,
+    teacher: 1,
     date: 1,
   },
   {
@@ -65,6 +51,6 @@ attendanceSchema.index(
 );
 
 export default mongoose.model(
-  "Attendance",
-  attendanceSchema
+  "TeacherAttendance",
+  teacherAttendanceSchema
 );

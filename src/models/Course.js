@@ -35,9 +35,13 @@ const courseSchema = new mongoose.Schema(
       type: Number,
       default: 3,
     },
+    semester: {
+      type: String,
+      required: true,
+    },
     section: {
     type: String,
-    required: true,
+    default: "A",
 },
     status: {
   type: String,

@@ -60,3 +60,19 @@ export const adminOnly = (req, res, next) => {
 
   next();
 };
+
+export const teacherOnly = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      message: "Unauthorized - no user found",
+    });
+  }
+
+  if (req.user.role !== "teacher") {
+    return res.status(403).json({
+      message: "Teacher access only",
+    });
+  }
+
+  next();
+};

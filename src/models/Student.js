@@ -88,7 +88,15 @@ level: {
   required: true,
 },
 
-semester: String,
+semester: {
+  type: String,
+  required: true,
+},
+section: {
+  type: String,
+  required: true,
+  default: "A",
+},
 
 batch: String,
 

@@ -40,6 +40,7 @@ const {
   major,
   level,
  semester,
+ section,
   batch,
   studyMode,
   enrollmentStatus,
@@ -138,6 +139,7 @@ if (lastStudent?.studentId) {
   major,
   level,
   semester,
+  section,
   batch,
   studyMode,
   enrollmentStatus,
@@ -213,20 +215,35 @@ if (lastStudent?.studentId) {
 }
 };
 
-export const getStudents = async (
-  req,
-  res
-) => {
+export const getStudents = async (req, res) => {
   try {
-    const students =
-      await Student.find()
-        .populate(
-          "department",
-          "name"
-        )
-        .sort({
-          createdAt: -1,
-        });
+    let filter = {};
+
+    // Department Head → only students in their department
+    if (req.user.role === "department_head") {
+      filter.department = req.user.department;
+    }
+
+    // College Head & Registrar → all students
+    if (
+      req.user.role === "college_head" ||
+      req.user.role === "registrar"
+    ) {
+      filter = {};
+    }
+
+    // Optional Filters
+    if (req.query.level) {
+      filter.level = req.query.level;
+    }
+
+    if (req.query.semester) {
+      filter.semester = req.query.semester;
+    }
+
+    const students = await Student.find(filter)
+      .populate("department", "name code")
+      .sort({ createdAt: -1 });
 
     res.json(students);
 
@@ -439,3 +456,46 @@ console.log("============================");
 
     }
   };
+
+  // =====================================
+// Student Statistics
+// =====================================
+export const getStudentStats = async (req, res) => {
+  try {
+    let filter = {};
+
+    // Department Head -> only own department
+    if (req.user.role === "department_head") {
+      filter.department = req.user.department;
+    }
+
+    const totalStudents = await Student.countDocuments(filter);
+
+    const maleStudents = await Student.countDocuments({
+      ...filter,
+      gender: "Male",
+    });
+
+    const femaleStudents = await Student.countDocuments({
+      ...filter,
+      gender: "Female",
+    });
+
+    const activeStudents = await Student.countDocuments({
+      ...filter,
+      enrollmentStatus: "Active",
+    });
+
+    res.json({
+      totalStudents,
+      maleStudents,
+      femaleStudents,
+      activeStudents,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};

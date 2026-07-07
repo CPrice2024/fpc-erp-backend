@@ -1,5 +1,6 @@
 import express from "express";
 import Course from "../models/Course.js";
+import User from "../models/User.js";
 
 import { protect }
 from "../middleware/authMiddleware.js";
@@ -62,12 +63,14 @@ router.post(
     try {
 
       const {
-        courseCode,
-        courseName,
-        level,
-        creditHour,
-        status,
-      } = req.body;
+  courseCode,
+  courseName,
+  level,
+  semester,
+  section,
+  creditHour,
+  status,
+} = req.body;
 
       const exists =
         await Course.findOne({
@@ -81,17 +84,16 @@ router.post(
         });
       }
 
-      const course =
-        await Course.create({
-          courseCode,
-          courseName,
-          level,
-          creditHour,
-          status,
-
-          department:
-            req.user.department,
-        });
+      const course = await Course.create({
+  courseCode,
+  courseName,
+  level,
+  semester,
+  section,
+  creditHour,
+  status,
+  department: req.user.department,
+});
 
       res.status(201).json({
         message:
@@ -118,38 +120,88 @@ router.put(
   departmentHeadOnly,
   async (req, res) => {
     try {
+      const { teacherId } = req.body;
 
-      const { teacherId } =
-        req.body;
+      const course = await Course.findById(req.params.id);
 
-      const course =
-        await Course.findByIdAndUpdate(
-          req.params.id,
-          {
-            teacher:
-              teacherId,
-          },
-          {
-            new: true,
-          }
-        )
-          .populate(
-            "teacher",
-            "name"
-          );
+      if (!course) {
+        return res.status(404).json({
+          message: "Course not found",
+        });
+      }
+
+      const teacher = await User.findById(teacherId);
+
+      if (!teacher || teacher.role !== "teacher") {
+        return res.status(404).json({
+          message: "Teacher not found",
+        });
+      }
+
+      // Update Course
+      course.teacher = teacher._id;
+      await course.save();
+
+      // Update Teacher
+      teacher.course = course._id;
+      await teacher.save();
+
+      const updatedCourse = await Course.findById(course._id)
+        .populate("teacher", "name email")
+        .populate("department", "name");
 
       res.json({
-        message:
-          "Teacher assigned successfully",
-
-        course,
+        message: "Teacher assigned successfully",
+        course: updatedCourse,
       });
 
     } catch (error) {
       res.status(500).json({
-        message:
-          error.message,
+        message: error.message,
       });
+    }
+  }
+);
+
+/* ==========================
+   COURSE STATISTICS
+========================== */
+router.get(
+  "/stats",
+  protect,
+  async (req, res) => {
+    try {
+
+      const filter = {};
+
+      if (req.user.role === "department_head") {
+        filter.department = req.user.department;
+      }
+
+      const totalCourses =
+        await Course.countDocuments(filter);
+
+      const assignedCourses =
+        await Course.countDocuments({
+          ...filter,
+          teacher: { $ne: null },
+        });
+
+      const unassignedCourses =
+        totalCourses - assignedCourses;
+
+      res.json({
+        totalCourses,
+        assignedCourses,
+        unassignedCourses,
+      });
+
+    } catch (error) {
+
+      res.status(500).json({
+        message: error.message,
+      });
+
     }
   }
 );

@@ -48,30 +48,51 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
-    /* ===== Teacher Fields ===== */
+/* ===========================
+   Teacher Information
+=========================== */
 
-    gender: {
-      type: String,
-      enum: ["Male", "Female"],
-      default: null,
-    },
+teacherId: {
+    type: String,
+    unique: true,
+},
 
-    courses: [
-  {
+gender: {
+    type: String,
+    enum: ["Male", "Female"],
+    default: null,
+},
+
+qualification: {
+    type: String,
+    default: "",
+},
+
+specialization: {
+    type: String,
+    default: "",
+},
+
+experience: {
+    type: Number,
+    default: 0,
+},
+
+office: {
+    type: String,
+    default: "",
+},
+
+bio: {
+    type: String,
+    default: "",
+},
+
+course: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Course",
-  },
-],
-
-    specialization: {
-      type: String,
-      default: "",
-    },
-
-    experience: {
-      type: Number,
-      default: 0,
-    },
+    default: null,
+},
 
     /* ========================== */
 

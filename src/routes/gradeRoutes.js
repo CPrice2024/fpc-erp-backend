@@ -5,6 +5,7 @@ import {
   saveGrades,
   getGradeReport,
   getGradeSummary,
+  getCourseGrades,
 } from "../controllers/gradeController.js";
 
 import {
@@ -34,6 +35,11 @@ router.get(
   "/report",
   registrarOnly,
   getGradeReport
+);
+
+router.get(
+  "/course",
+  getCourseGrades
 );
 
 router.get(

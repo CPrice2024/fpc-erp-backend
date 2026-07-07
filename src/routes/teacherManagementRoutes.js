@@ -1,61 +1,42 @@
 import express from "express";
 
-import { protect }
-from "../middleware/authMiddleware.js";
-
-import {
-  departmentHeadOnly,
-} from "../middleware/roleMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
+import { departmentHeadOnly } from "../middleware/roleMiddleware.js";
 
 import {
   createTeacher,
   getTeachers,
+  getTeacherById,
+  updateTeacher,
   deleteTeacher,
+  resetTeacherPassword,
+  getTeacherStats,
 } from "../controllers/teacherManagementController.js";
-import {
-  getMyClasses,
-  getAttendanceStudents,
-  saveAttendance,
-}
-from "../controllers/teacherController.js";
 
-const router =
-  express.Router();
+const router = express.Router();
 
-router.use(protect);
+// All routes require Department Head authentication
+router.use(protect, departmentHeadOnly);
 
+// Statistics
+router.get("/stats", getTeacherStats);
 
-router.get(
-  "/my-classes",
-  getMyClasses
-);
+// Get all teachers
+router.get("/", getTeachers);
 
-router.get(
-  "/attendance-students",
-  getAttendanceStudents
-);
+// Get single teacher
+router.get("/:id", getTeacherById);
 
-router.post(
-  "/attendance",
-  saveAttendance
-);
+// Create teacher
+router.post("/", createTeacher);
 
-router.get(
-  "/",
-  departmentHeadOnly,
-  getTeachers
-);
+// Update teacher
+router.put("/:id", updateTeacher);
 
-router.post(
-  "/",
-  departmentHeadOnly,
-  createTeacher
-);
+// Reset password
+router.put("/:id/reset-password", resetTeacherPassword);
 
-router.delete(
-  "/:id",
-  departmentHeadOnly,
-  deleteTeacher
-);
+// Delete teacher
+router.delete("/:id", deleteTeacher);
 
 export default router;
