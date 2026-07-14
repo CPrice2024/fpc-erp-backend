@@ -292,6 +292,9 @@ export const updateStudent =
       const updateData = {
         ...req.body,
       };
+      console.log("========== UPDATE DATA ==========");
+      console.log(updateData);
+      console.log("===============================");
 
       updateData.isInmate =
         req.body.isInmate === "true" ||
@@ -339,6 +342,8 @@ updateData.sentenceDuration =
         updateData.photo =
           `/uploads/students/${req.file.filename}`;
       }
+      console.log("UPDATE DATA");
+console.log(updateData);
 
       const student =
         await Student.findByIdAndUpdate(

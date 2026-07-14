@@ -1,6 +1,7 @@
 import Grade from "../models/Grade.js";
 import Student from "../models/Student.js";
 import User from "../models/User.js";
+import { calculateGrade, getGradePoint, } from "../utils/gradeCalculator.js";
 
 export const getStudentsForGrades =
 async (req, res) => {
@@ -36,21 +37,7 @@ res.json(students);
   }
 };
 
-const getGradePoint =
-  (letterGrade) => {
 
-    const map = {
-      A: 4.0,
-      B: 3.0,
-      C: 2.0,
-      D: 1.0,
-      F: 0.0,
-    };
-
-    return (
-      map[letterGrade] || 0
-    );
-  };
 
 export const saveGrades = async (req, res) => {
   try {
@@ -88,33 +75,41 @@ export const saveGrades = async (req, res) => {
         });
       }
 
-      const total =
-        Number(item.assignment) +
-        Number(item.quiz) +
-        Number(item.midExam) +
-        Number(item.finalExam);
+      const validationTotal =
+  Number(item.assignment) +
+  Number(item.quiz) +
+  Number(item.midExam) +
+  Number(item.finalExam);
 
-      if (total > 100) {
-        return res.status(400).json({
-          message: "Total marks cannot exceed 100."
-        });
-      }
+if (validationTotal > 100) {
+  return res.status(400).json({
+    message: "Total marks cannot exceed 100."
+  });
+}
 
       // ===== GRADE =====
 
-      let letter = "F";
+    const {
 
-      if (total >= 90) letter = "A";
-      else if (total >= 80) letter = "B";
-      else if (total >= 70) letter = "C";
-      else if (total >= 60) letter = "D";
+  total,
 
-      const gradePoint = getGradePoint(letter);
+  letterGrade,
 
-      const status =
-        gradePoint >= 2
-          ? "Passed"
-          : "Failed";
+  gradePoint,
+
+  status,
+
+} = calculateGrade({
+
+  assignment: item.assignment,
+
+  quiz: item.quiz,
+
+  midExam: item.midExam,
+
+  finalExam: item.finalExam,
+
+});
 
       await Grade.findOneAndUpdate(
         {
@@ -133,7 +128,7 @@ export const saveGrades = async (req, res) => {
           finalExam: item.finalExam,
 
           total,
-          letterGrade: letter,
+          letterGrade,
           gradePoint,
           status,
 

@@ -19,6 +19,13 @@ import teacherAttendanceRoutes from "./routes/teacherAttendanceRoutes.js";
 import departmentDashboardRoutes from "./routes/departmentDashboardRoutes.js";
 
 
+import examRoutes from "./routes/examRoutes.js";
+import questionRoutes from "./routes/questionRoutes.js";
+import examAttemptRoutes from "./routes/examAttemptRoutes.js";
+import studentAnswerRoutes from "./routes/studentAnswerRoutes.js";
+import examResultRoutes from "./routes/examResultRoutes.js";
+
+
 const app = express();
 
 app.use(cors());
@@ -57,6 +64,14 @@ app.use("/api/finance", financeRoutes);
 app.use("/api/teacher-attendance",teacherAttendanceRoutes);
 
 app.use("/api/department-dashboard",departmentDashboardRoutes);
+
+
+app.use("/api/exams", examRoutes);
+app.use("/api/questions", questionRoutes);
+app.use("/api/exam-attempts", examAttemptRoutes);
+app.use("/api/student-answers", studentAnswerRoutes);
+app.use("/api/exam-results", examResultRoutes);
+
 
 /* Home Route */
 

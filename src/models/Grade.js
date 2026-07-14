@@ -53,12 +53,58 @@ const gradeSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    digitalMidExam: {
+  type: Number,
+  default: 0,
+},
 
+digitalMidAttempt: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "ExamAttempt",
+},
+    
     finalExam: {
       type: Number,
       default: 0,
       min: 0,
     },
+    digitalFinalExam: {
+  type: Number,
+  default: 0,
+},
+
+digitalFinalAttempt: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "ExamAttempt",
+},
+    assignmentSource: {
+  type: String,
+  enum: ["Manual", "Digital"],
+  default: "Manual",
+},
+
+quizSource: {
+  type: String,
+  enum: ["Manual", "Digital"],
+  default: "Manual",
+},
+
+midExamSource: {
+  type: String,
+  enum: ["Manual", "Digital"],
+  default: "Manual",
+},
+
+finalExamSource: {
+  type: String,
+  enum: ["Manual", "Digital"],
+  default: "Manual",
+},
+
+exam: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Exam",
+},
 
     total: {
       type: Number,
