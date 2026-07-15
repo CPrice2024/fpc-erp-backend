@@ -1,5 +1,6 @@
 import Student from "../models/Student.js";
 import Grade from "../models/Grade.js";
+import Attendance from "../models/Attendance.js";
 
 export const createStudent = async (
   req,
@@ -498,6 +499,39 @@ export const getStudentStats = async (req, res) => {
       activeStudents,
     });
 
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+export const getStudentEnrollments = async (req, res) => {
+  try {
+
+    const grades = await Grade.find({
+      student: req.params.id,
+    })
+      .populate("course")
+      .populate("teacher");
+
+    res.json(grades);
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message,
+    });
+
+  }
+};
+
+export const getStudentAttendance = async (req, res) => {
+  try {
+    const attendance = await Attendance.find({
+      student: req.params.id,
+    }).populate("course");
+
+    res.json(attendance);
   } catch (error) {
     res.status(500).json({
       message: error.message,

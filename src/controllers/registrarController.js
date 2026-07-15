@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 
+
 export const createRegistrar = async (
   req,
   res
@@ -178,6 +179,36 @@ async (req, res) => {
       registrar,
     });
 
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+export const getStudentEnrollments = async (req, res) => {
+  try {
+    const enrollments = await Enrollment.find({
+      student: req.params.id,
+    })
+      .populate("course")
+      .populate("teacher");
+
+    res.json(enrollments);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+export const getStudentAttendance = async (req, res) => {
+  try {
+    const attendance = await Attendance.find({
+      student: req.params.id,
+    }).populate("course");
+
+    res.json(attendance);
   } catch (error) {
     res.status(500).json({
       message: error.message,
