@@ -507,7 +507,6 @@ export const getStudentStats = async (req, res) => {
 };
 export const getStudentEnrollments = async (req, res) => {
   try {
-
     const grades = await Grade.find({
       student: req.params.id,
     })
@@ -515,13 +514,10 @@ export const getStudentEnrollments = async (req, res) => {
       .populate("teacher");
 
     res.json(grades);
-
   } catch (error) {
-
     res.status(500).json({
       message: error.message,
     });
-
   }
 };
 
