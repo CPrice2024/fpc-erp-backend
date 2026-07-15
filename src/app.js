@@ -17,6 +17,7 @@ import attendanceRoutes from "./routes/attendanceRoutes.js";
 import teacherRoutes from "./routes/teacherRoutes.js";
 import teacherAttendanceRoutes from "./routes/teacherAttendanceRoutes.js";
 import departmentDashboardRoutes from "./routes/departmentDashboardRoutes.js";
+import digitalBookRoutes from "./routes/digitalBookRoutes.js";
 
 
 import examRoutes from "./routes/examRoutes.js";
@@ -71,6 +72,7 @@ app.use("/api/questions", questionRoutes);
 app.use("/api/exam-attempts", examAttemptRoutes);
 app.use("/api/student-answers", studentAnswerRoutes);
 app.use("/api/exam-results", examResultRoutes);
+app.use("/api/books", digitalBookRoutes);
 
 
 /* Home Route */
