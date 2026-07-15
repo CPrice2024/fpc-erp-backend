@@ -10,6 +10,23 @@ try{
 
 const teacher=await User.findById(req.user.id)
 .populate("course");
+if (!teacher) {
+  return res.status(404).json({
+    message: "Teacher not found",
+  });
+}
+
+if (!teacher.course) {
+  return res.status(400).json({
+    message: "Teacher has no assigned course.",
+  });
+}
+
+if (!req.file) {
+  return res.status(400).json({
+    message: "Please select a file.",
+  });
+}
 
 if(!teacher)
 return res.status(404).json({
