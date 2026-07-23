@@ -68,7 +68,7 @@ router.post(
   level,
   semester,
   section,
-  creditHour,
+  nominalDuration,
   status,
 } = req.body;
 
@@ -90,7 +90,7 @@ router.post(
   level,
   semester,
   section,
-  creditHour,
+  nominalDuration,
   status,
   department: req.user.department,
 });
@@ -251,7 +251,7 @@ router.put(
       const {
         courseName,
         level,
-        creditHour,
+        nominalDuration,
         status,
       } = req.body;
 
@@ -261,7 +261,7 @@ router.put(
           {
             courseName,
             level,
-            creditHour,
+            nominalDuration,
             status,
           },
           {

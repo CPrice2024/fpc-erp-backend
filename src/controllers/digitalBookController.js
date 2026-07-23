@@ -2,8 +2,10 @@ import DigitalBook from "../models/DigitalBook.js";
 import User from "../models/User.js";
 
 export const uploadBook=async(req,res)=>{
-     console.log("BODY:", req.body);
-  console.log("FILE:", req.file);
+         console.log("========== BOOK UPLOAD ==========");
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
+    console.log("USER:", req.user);
 
 
 try{

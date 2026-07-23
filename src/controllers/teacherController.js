@@ -36,13 +36,15 @@ export const getTeacherDashboard = async (req, res) => {
       });
     }
 
-    const students = await Student.find({
-      department: teacher.department._id,
-      level: teacher.course.level,
-      semester: teacher.course.semester,
-      section: teacher.course.section,
-      status: "active",
-    });
+  const students = await Student.find({
+  department: teacher.course.department._id,
+  level: teacher.course.level,
+  semester: teacher.course.semester,
+  section: teacher.course.section,
+  enrollmentStatus: "Enrolled",
+})
+.populate("department", "name")
+.sort({ firstName: 1 });
 
    const today = new Date();
 today.setHours(0, 0, 0, 0);
@@ -167,40 +169,35 @@ export const getStudentProfile = async (req, res) => {
 };
 
 export const getMyStudents = async (req, res) => {
-
   try {
-
-    const teacher = await User.findById(req.user.id)
-      .populate("course");
+    const teacher = await User.findById(req.user.id).populate({
+  path: "course",
+  populate: {
+    path: "department",
+  },
+});
+    if (!teacher || !teacher.course) {
+      return res.json([]);
+    }
 
     const students = await Student.find({
-
-      department: teacher.department,
-
-      level: teacher.course.level,
-
-      semester: teacher.course.semester,
-
-      section: teacher.course.section,
-
-      status: "active",
-
-    }).sort({
-      firstName: 1,
-    });
+  department: teacher.course.department._id,
+  level: teacher.course.level,
+  semester: teacher.course.semester,
+  section: teacher.course.section,
+  enrollmentStatus: "Enrolled",
+})
+.populate("department", "name")
+.sort({ firstName: 1 });
 
     res.json(students);
 
   } catch (error) {
-
     res.status(500).json({
       message: error.message,
     });
-
   }
-
 };
-
 export const getAttendanceStudents =
 async (req, res) => {
   try {

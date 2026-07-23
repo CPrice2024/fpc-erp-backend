@@ -3,9 +3,11 @@ import mongoose from "mongoose";
 const studentSchema = new mongoose.Schema(
   {
     studentId: {
-      type: String,
-      unique: true,
-    },
+  type: String,
+  required: true,
+  unique: true,
+  trim: true,
+},
 
     // Personal Information
     firstName: {
@@ -42,13 +44,22 @@ const studentSchema = new mongoose.Schema(
   default: "",
 },
 region: String,
+zone: String,
 city: String,
 Woreda: String,
 SpecificPlace: String,
 address: String,
 
-phone: String,
-email: String,
+phone: {
+  type: String,
+  trim: true,
+},
+
+email: {
+  type: String,
+  trim: true,
+  lowercase: true,
+},
 
 
   // =========================
@@ -81,7 +92,9 @@ courses: [
 
 program: String,
 
-major: String,
+COC: String,
+
+COCIssueDate: Date,
 
 level: {
   type: String,
@@ -102,13 +115,41 @@ batch: String,
 
 studyMode: String,
 
-enrollmentStatus: String,
+enrollmentStatus: {
+  type: String,
+  enum: [
+    "Enrolled",
+    "Deferred",
+    "Suspended",
+    "Withdrawn",
+    "Graduated",
+    "Transfer"
+  ],
+  default: "Enrolled",
+},
+statusIssueDate: {
+  type: Date,
+},
+
+statusRemark: {
+  type: String,
+  trim: true,
+},
+
+statusInstituteName: {
+  type: String,
+  trim: true,
+},
+
+
 
 educationSponsor: String,
 
 educationLanguage: String,
 
 registrationDate: Date,
+
+
 
 educationStartDate: Date,
 
@@ -162,17 +203,6 @@ assignedOfficer: String,
 
 officerPhone: String,
 
-    // Status
-    status: {
-      type: String,
-      enum: [
-        "active",
-        "graduated",
-        "suspended",
-        "withdrawn",
-      ],
-      default: "active",
-    },
 
     // Tracking
     createdBy: {

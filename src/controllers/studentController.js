@@ -1,6 +1,7 @@
 import Student from "../models/Student.js";
 import Grade from "../models/Grade.js";
 import Attendance from "../models/Attendance.js";
+import { getClassCourses } from "../services/classService.js";
 
 export const createStudent = async (
   req,
@@ -31,6 +32,7 @@ const {
 
   // Education
   institutionName,
+  remark,
   academicYear,
   educationType,
   highestQualification,
@@ -38,7 +40,7 @@ const {
   previousEducation,
   department,
   program,
-  major,
+  COC,
   level,
  semester,
  section,
@@ -48,6 +50,7 @@ const {
   educationSponsor,
   educationLanguage,
   registrationDate,
+  issueDate,
   educationStartDate,
   educationEndDate,
   durationMonths,
@@ -130,6 +133,7 @@ if (lastStudent?.studentId) {
 
   // Education
   institutionName,
+  remark,
   academicYear,
   educationType,
   highestQualification,
@@ -137,7 +141,7 @@ if (lastStudent?.studentId) {
   previousEducation,
   department,
   program,
-  major,
+  COC,
   level,
   semester,
   section,
@@ -148,6 +152,8 @@ if (lastStudent?.studentId) {
   educationLanguage,
   registrationDate:
   registrationDate || null,
+  issueDate:
+  issueDate || null,
   educationStartDate:
   educationStartDate || null,
   educationEndDate:
@@ -244,6 +250,7 @@ export const getStudents = async (req, res) => {
 
     const students = await Student.find(filter)
       .populate("department", "name code")
+      .populate("courses", "courseCode courseName teacher")
       .sort({ createdAt: -1 });
 
     res.json(students);
@@ -266,7 +273,8 @@ export const getStudent = async (
   ).populate(
     "department",
     "name"
-  );
+  )
+  .populate("courses", "courseCode courseName teacher");
 
     if (!student) {
       return res.status(404).json({
@@ -329,6 +337,7 @@ updateData.sentenceDuration =
 [
   "dob",
   "registrationDate",
+  "issueDate",
   "educationStartDate",
   "educationEndDate",
   "imprisonmentStartDate",
@@ -346,19 +355,21 @@ updateData.sentenceDuration =
       console.log("UPDATE DATA");
 console.log(updateData);
 
-      const student =
-        await Student.findByIdAndUpdate(
-          req.params.id,
-          updateData,
-          {
-            new: true,
-          }
-        ).populate(
-          "department",
-          "name"
-        );
+delete updateData._id;
+delete updateData.__v;
+delete updateData.createdAt;
+delete updateData.updatedAt;
+delete updateData.createdBy;
 
-      res.json(student);
+const student = await Student.findByIdAndUpdate(
+  req.params.id,
+  updateData,
+  { new: true }
+)
+.populate("department", "name code")
+.populate("courses", "courseCode courseName teacher");
+
+res.json(student);
 
     } 
     catch (error) {
@@ -391,77 +402,75 @@ export const deleteStudent =
     }
   };
 
-  export const getStudentCourses =
-  async (req, res) => {
-    try {
+export const getStudentCourses = async (req, res) => {
+  try {
 
-     const grades = await Grade.find({
-  student: req.params.id,
-})
-.populate("course")
-.populate("teacher", "name");
+    const student = await Student.findById(req.params.id)
+      .populate("department", "name");
 
-console.log("========== GRADES ==========");
-console.log(JSON.stringify(grades, null, 2));
-console.log("============================");
-
-      const courses =
-  grades.map((g) => ({
-    _id: g._id,
-
-    courseCode:
-      g.course?.courseCode,
-
-    courseName:
-      g.course?.courseName,
-
-    credits:
-      g.course?.creditHour,
-
-    creditHour:
-      g.course?.creditHour,
-
-    assignment:
-      g.assignment,
-
-    quiz:
-      g.quiz,
-
-    midExam:
-      g.midExam,
-
-    finalExam:
-      g.finalExam,
-
-    total:
-      g.total,
-
-    grade:
-      g.letterGrade,
-
-    letterGrade:
-      g.letterGrade,
-
-    status:
-      g.letterGrade === "F"
-        ? "failed"
-        : "passed",
-
-    teacher:
-      g.teacher?.name,
-  }));
-
-      res.json(courses);
-
-    } catch (error) {
-
-      res.status(500).json({
-        message:
-          error.message,
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found",
       });
-
     }
-  };
+
+    const courses = await getClassCourses({
+      department: student.department._id,
+      level: student.level,
+      semester: student.semester,
+      section: student.section,
+    });
+
+    res.json(courses);
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+export const getActiveStudents = async (req, res) => {
+  try {
+    const students = await Student.find({
+      enrollmentStatus: "Enrolled",
+    })
+      .populate("department", "name code")
+      .populate("courses", "courseCode courseName teacher")
+      .sort({ createdAt: -1 });
+
+    res.json(students);
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+export const getInactiveStudents = async (req, res) => {
+  try {
+    const students = await Student.find({
+      enrollmentStatus: {
+        $in: [
+          "Deferred",
+          "Suspended",
+          "Withdrawn",
+          "Graduated",
+          "Transfer",
+        ],
+      },
+    })
+      .populate("department", "name code")
+      .populate("courses", "courseCode courseName teacher")
+      .sort({ createdAt: -1 });
+
+    res.json(students);
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
 
   // =====================================
 // Student Statistics
@@ -488,9 +497,8 @@ export const getStudentStats = async (req, res) => {
     });
 
     const activeStudents = await Student.countDocuments({
-      ...filter,
-      enrollmentStatus: "Active",
-    });
+    enrollmentStatus: "Enrolled",
+});
 
     res.json({
       totalStudents,
@@ -529,6 +537,47 @@ export const getStudentAttendance = async (req, res) => {
 
     res.json(attendance);
   } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+export const getRegistrationSlip = async (req, res) => {
+  try {
+    console.log("===== REGISTRATION SLIP =====");
+    console.log("Student ID:", req.params.id);
+
+    const student = await Student.findById(req.params.id)
+      .populate("department", "name");
+
+    console.log("Student:", student);
+
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found",
+      });
+    }
+
+    console.log("Loading courses...");
+
+    const courses = await getClassCourses({
+      department: student.department._id,
+      level: student.level,
+      semester: student.semester,
+      section: student.section,
+    });
+
+    console.log("Courses:", courses);
+
+    res.json({
+      student,
+      courses,
+    });
+
+  } catch (error) {
+    console.error("REGISTRATION SLIP ERROR:");
+    console.error(error);
+
     res.status(500).json({
       message: error.message,
     });

@@ -31,9 +31,9 @@ const courseSchema = new mongoose.Schema(
       required: true,
     },
 
-    creditHour: {
+    nominalDuration: {
       type: Number,
-      default: 3,
+      default: 30,
     },
     semester: {
       type: String,

@@ -128,7 +128,7 @@ export const getTeachers =
       .populate("department", "name")
       .populate(
         "course",
-        "courseCode courseName level semester section creditHour"
+        "courseCode courseName level semester section nominalDuration"
       );
 
     if (!teacher) {

@@ -16,7 +16,6 @@ export const createDepartment = async (req, res) => {
       headName,
     } = req.body;
 
-    // 1. check duplicate
     const exists = await Department.findOne({
       $or: [{ name }, { code }],
     });
@@ -27,7 +26,6 @@ export const createDepartment = async (req, res) => {
       });
     }
 
-    // 2. create department first
     const department = await Department.create({
       name,
       code,
@@ -37,7 +35,6 @@ export const createDepartment = async (req, res) => {
       established,
     });
 
-    // 3. create department head user
     const plainPassword = `${code}@123`;
 
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
@@ -50,7 +47,6 @@ export const createDepartment = async (req, res) => {
       department: department._id,
     });
 
-    // 4. link user to department
     department.departmentHead = user._id;
     await department.save();
 
@@ -59,7 +55,7 @@ export const createDepartment = async (req, res) => {
       department,
       loginCredentials: {
         email,
-        password: plainPassword, // show ONLY once
+        password: plainPassword, 
       },
     });
   } catch (error) {

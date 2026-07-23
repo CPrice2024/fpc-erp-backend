@@ -16,6 +16,8 @@ import {
   updateStudent,
   deleteStudent,
   getStudentCourses,
+  getActiveStudents,
+  getInactiveStudents,
 } from "../controllers/studentController.js";
 
 import {
@@ -70,6 +72,22 @@ router.get(
   "/students",
   registrarOnly,
   getStudents
+);
+
+router.get(
+  "/students/active",
+  registrarOnly,
+  (req, res, next) => {
+    console.log("✅ ACTIVE ROUTE HIT");
+    next();
+  },
+  getActiveStudents
+);
+
+router.get(
+  "/students/inactive",
+  registrarOnly,
+  getInactiveStudents
 );
 
 router.get(

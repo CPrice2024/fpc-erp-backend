@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
 
 import authRoutes from "./routes/authRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
@@ -26,8 +28,16 @@ import examAttemptRoutes from "./routes/examAttemptRoutes.js";
 import studentAnswerRoutes from "./routes/studentAnswerRoutes.js";
 import examResultRoutes from "./routes/examResultRoutes.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+console.log("__filename:", __filename);
+console.log("__dirname:", __dirname);
 
 const app = express();
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url} from ${req.ip}`);
+  next();
+});
 
 app.use(cors());
 app.use(express.json());
@@ -58,7 +68,11 @@ app.use("/api/attendance", attendanceRoutes);
 
 app.use("/api/reports",reportRoutes );
 
-app.use("/uploads",express.static("uploads"));
+const uploadsPath = path.join(__dirname, "..", "uploads");
+
+console.log("Uploads Path:", uploadsPath);
+
+app.use("/uploads", express.static(uploadsPath));
 
 app.use("/api/finance", financeRoutes);
 
@@ -74,11 +88,28 @@ app.use("/api/student-answers", studentAnswerRoutes);
 app.use("/api/exam-results", examResultRoutes);
 app.use("/api/books", digitalBookRoutes);
 
+app.get("/hello", (req, res) => {
+  res.send("Hello ERP");
+});
 
 /* Home Route */
 
-app.get("/", (req, res) => {
-  res.send("ERP API Running");
+// app.get("/", (req, res) => {
+//  res.send("ERP API Running");
+// });
+
+// Serve React build
+const frontendPath = path.resolve(__dirname, "..", "..", "frontend", "dist");
+console.log("Frontend Path:", frontendPath);
+console.log(
+  "Index exists:",
+  fs.existsSync(path.join(frontendPath, "index.html"))
+);
+app.use(express.static(frontendPath));
+
+// React routes
+app.get("/{*any}", (req, res) => {
+  res.sendFile(path.join(frontendPath, "index.html"));
 });
 
 export default app;

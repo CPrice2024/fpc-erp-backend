@@ -123,7 +123,7 @@ export const forgotPassword = async (req, res) => {
       .update(resetToken)
       .digest("hex");
 
-    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 min
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; 
 
     await user.save();
 

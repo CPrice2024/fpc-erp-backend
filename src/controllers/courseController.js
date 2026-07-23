@@ -11,7 +11,7 @@ export const createCourse = async (req, res) => {
       level,
       semester,
       section,
-      creditHour,
+      nominalDuration,
     } = req.body;
 
     // Check duplicate
@@ -30,7 +30,7 @@ export const createCourse = async (req, res) => {
       level,
       semester,
       section,
-      creditHour,
+      nominalDuration,
     });
 
     res.status(201).json(course);

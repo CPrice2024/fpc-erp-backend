@@ -171,7 +171,7 @@ async (req, res) => {
         })
         .populate(
   "course",
-  "courseCode courseName creditHour"
+  "courseCode courseName nominalDuration"
 )
 .populate(
   "teacher",
@@ -232,7 +232,7 @@ async (req, res) => {
         })
         .populate(
           "course",
-          "courseCode courseName creditHour"
+          "courseCode courseName nominalDuration"
         )
         .populate(
           "teacher",
@@ -276,13 +276,13 @@ async (req, res) => {
               grade.student.level,
 
             totalPoints: 0,
-            totalCredits: 0,
+            totalnominalDurations: 0,
           };
         }
 
-        const credits =
+        const nominalDurations =
           grade.course
-            ?.creditHour || 3;
+            ?.nominalDuration || 3;
 
         reportMap[
           studentId
@@ -290,12 +290,12 @@ async (req, res) => {
           getGradePoint(
             grade.letterGrade
           ) *
-          credits;
+          nominalDurations;
 
         reportMap[
           studentId
-        ].totalCredits +=
-          credits;
+        ].totalnominalDurations +=
+          nominalDurations;
       }
     );
 
@@ -305,10 +305,10 @@ async (req, res) => {
       ).map((s) => {
 
         const gpa =
-          s.totalCredits > 0
+          s.totalnominalDurations > 0
             ? (
                 s.totalPoints /
-                s.totalCredits
+                s.totalnominalDurations
               ).toFixed(2)
             : "0.00";
 
