@@ -88,28 +88,27 @@ app.use("/api/student-answers", studentAnswerRoutes);
 app.use("/api/exam-results", examResultRoutes);
 app.use("/api/books", digitalBookRoutes);
 
+/* Home Route */
+
 app.get("/hello", (req, res) => {
   res.send("Hello ERP");
 });
 
-/* Home Route */
-
-// app.get("/", (req, res) => {
-//  res.send("ERP API Running");
-// });
-
-// Serve React build
+// Serve React build only if it exists (Local/Electron)
 const frontendPath = path.resolve(__dirname, "..", "..", "frontend", "dist");
-console.log("Frontend Path:", frontendPath);
-console.log(
-  "Index exists:",
-  fs.existsSync(path.join(frontendPath, "index.html"))
-);
-app.use(express.static(frontendPath));
 
-// React routes
-app.get("/{*any}", (req, res) => {
-  res.sendFile(path.join(frontendPath, "index.html"));
-});
+if (fs.existsSync(path.join(frontendPath, "index.html"))) {
+  console.log("Frontend Path:", frontendPath);
+  console.log("Serving local React build");
+
+  app.use(express.static(frontendPath));
+
+  // React routes
+  app.get("/{*any}", (req, res) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
+  });
+} else {
+  console.log("No local frontend build found. API mode only.");
+}
 
 export default app;
